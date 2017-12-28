@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-enum {HALT, PUSH, ADD, SUB};
+enum {HALT, PUSH, ADD, SUB, PRINT};
 
 int ram[1024] = {
 	PUSH, 11,
@@ -8,6 +8,7 @@ int ram[1024] = {
 	ADD,
 	PUSH, 4,
 	SUB,
+	PRINT,
 	HALT,
 };
 
@@ -42,6 +43,10 @@ void main()
 				op2 = *sp++;
 				op1 = *sp++;
 				*--sp = op1 - op2;
+				break;
+			case PRINT:
+				op1 = *sp++;
+				printf("%i\n", op1);
 				break;
 		}
 	}
