@@ -4,14 +4,10 @@ enum {HALT, PUSH, LOAD, STORE, ADD, SUB, PRINT};
 
 int ram[1024] = {
 	PUSH, 512,
-	PUSH, 11,
-	PUSH, 13,
-	ADD,
-	PUSH, 4,
-	SUB,
+	PUSH, 11, PUSH, 13, ADD,
+	PUSH, 4, SUB,
 	STORE,
-	PUSH, 512,
-	LOAD,
+	PUSH, 512, LOAD,
 	PRINT,
 	HALT,
 };
