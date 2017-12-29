@@ -1,17 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 enum {HALT, PUSH, LOAD, STORE, ADD, SUB, PRINT};
 
-int ram[1024] = {
-	PUSH, 512,
-	PUSH, 11, PUSH, 13, ADD,
-	PUSH, 4, SUB,
-	STORE,
-	PUSH, 512, LOAD,
-	PRINT,
-	HALT,
-};
-
+FILE *fs = 0;
+int ram[1024];
 int *ip = ram;
 int *sp = ram + 1024;
 int running = 1;
@@ -19,9 +12,17 @@ int op = 0;
 int op1 = 0;
 int op2 = 0;
 
-void main()
+void main(int argc, char **argv)
 {
 	printf("knarf\n");
+	
+	fs = fopen("prog.bin", "rb");
+	
+	if(fs == 0) {
+		printf("error: missing input file\n");
+	}
+	
+	fread(ram, sizeof(int), 1024, fs);
 	
 	while(running) {
 		op = *ip++;

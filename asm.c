@@ -23,7 +23,7 @@ int binary[1024];
 int *curBin = binary;
 int found = 0;
 int num = 0;
-FILE *fs;
+FILE *fs = 0;
 
 void main()
 {
@@ -73,7 +73,7 @@ void main()
 	
 	printf("binary has %li words\n", curBin - binary);
 	
-	fs = fopen("prog.bin", "w");
+	fs = fopen("prog.bin", "wb");
 	fwrite(binary, sizeof(int), 1024, fs);
 	fclose(fs);
 }
