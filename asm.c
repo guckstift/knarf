@@ -3,7 +3,7 @@
 #include <string.h>
 
 char *operations[] = {
-	"halt", "push", "load", "store", "add", "sub", "print",
+	"halt", "push", "load", "store", "add", "sub", "mul", "div", "print", "jz", "jmp",
 };
 
 int sourceLen = 0;

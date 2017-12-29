@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-enum {HALT, PUSH, LOAD, STORE, ADD, SUB, PRINT};
+enum {HALT, PUSH, LOAD, STORE, ADD, SUB, MUL, DIV, PRINT, JZ, JMP};
 
 FILE *fs = 0;
 int ram[1024];
@@ -60,9 +60,28 @@ void main(int argc, char **argv)
 				op1 = *sp++;
 				*--sp = op1 - op2;
 				break;
+			case MUL:
+				op2 = *sp++;
+				op1 = *sp++;
+				*--sp = op1 * op2;
+				break;
+			case DIV:
+				op2 = *sp++;
+				op1 = *sp++;
+				*--sp = op1 / op2;
+				break;
 			case PRINT:
 				op1 = *sp++;
 				printf("%i\n", op1);
+				break;
+			case JZ:
+				op2 = *sp++;
+				op1 = *sp++;
+				if(!op1) ip = ram + op2;
+				break;
+			case JMP:
+				op1 = *sp++;
+				ip = ram + op1;
 				break;
 			default:
 				printf("error: unknown opcode %i\n", op);
