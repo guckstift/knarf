@@ -15,7 +15,61 @@ int binary[1024];
 int *curBin = binary;
 int found = 0;
 int num = 0;
+int tokLen = 0;
+int opLen = 0;
 FILE *fs = 0;
+
+struct Reloc {
+	struct Reloc *next;
+	char *name;
+	int length;
+	int position;
+} *relocs = 0, *lastReloc = 0;
+
+struct Label {
+	struct Label *next;
+	char *name;
+	int length;
+	int position;
+} *labels = 0, *lastLabel = 0;
+
+void addReloc(char *name, int length, int position)
+{
+	struct Reloc *new = malloc(sizeof(struct Reloc));
+	
+	new->next = 0;
+	new->name = name;
+	new->length = length;
+	new->position = position;
+	
+	if(!relocs) {
+		relocs = new;
+		lastReloc = new;
+	}
+	else {
+		lastReloc->next = new;
+		lastReloc = new;
+	}
+}
+
+void addLabel(char *name, int length, int position)
+{
+	struct Label *new = malloc(sizeof(struct Label));
+	
+	new->next = 0;
+	new->name = name;
+	new->length = length;
+	new->position = position;
+	
+	if(!labels) {
+		labels = new;
+		lastLabel = new;
+	}
+	else {
+		lastLabel->next = new;
+		lastLabel = new;
+	}
+}
 
 void main(int argc, char **argv)
 {
@@ -49,10 +103,10 @@ void main(int argc, char **argv)
 			while(*cur >= 'a' && *cur <= 'z') cur++;
 			
 			found = 0;
+			tokLen = cur - start;
 			
 			for(int i=0; i<numOperations; i++) {
-				int opLen = strlen(operations[i]);
-				int tokLen = cur - start;
+				opLen = strlen(operations[i]);
 				
 				if(opLen == tokLen && strncmp(start, operations[i], opLen) == 0) {
 					found = 1;
@@ -63,8 +117,9 @@ void main(int argc, char **argv)
 			}
 			
 			if(!found) {
-				printf("error(%li): unknown operation\n", cur - source);
-				exit(-1);
+				addReloc(start, tokLen, curBin - binary);
+				*curBin++ = 0;
+				printf("reloc %.*s\n", tokLen, start);
 			}
 		}
 		else if(*cur >= '0' && *cur <= '9') {
@@ -76,6 +131,16 @@ void main(int argc, char **argv)
 			
 			*curBin++ = num;
 			printf("%i\n", num);
+		}
+		else if(*cur  == ':') {
+			cur++;
+			start = cur;
+			
+			while(*cur >= 'a' && *cur <= 'z') cur++;
+			
+			tokLen = cur - start;
+			addLabel(start, tokLen, curBin - binary);
+			printf("label %.*s\n", tokLen, start);
 		}
 		else if(*cur == ' ' || *cur == '\t' || *cur == '\r' || *cur == '\n') {
 			cur++;
