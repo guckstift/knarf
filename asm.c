@@ -73,12 +73,12 @@ void addLabel(char *name, int length, int position)
 
 void main(int argc, char **argv)
 {
-	if(argc < 2) {
-		printf("error: missing input file\n");
+	if(argc < 3) {
+		printf("usage: asm <output-file> <input-file>\n");
 		exit(-1);
 	}
 	
-	fs = fopen(argv[1], "rb");
+	fs = fopen(argv[2], "rb");
 	
 	if(fs == 0) {
 		printf("error: input file not found\n");
@@ -181,7 +181,7 @@ void main(int argc, char **argv)
 	
 	printf("binary has %li words\n", curBin - binary);
 	
-	fs = fopen("prog.bin", "wb");
+	fs = fopen(argv[1], "wb");
 	fwrite(binary, sizeof(int), 1024, fs);
 	fclose(fs);
 }
