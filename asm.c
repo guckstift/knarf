@@ -2,31 +2,46 @@
 #include <stdlib.h>
 #include <string.h>
 
-char source[] =
-	"push 512 "
-	"push 11 push 13 add "
-	"push 4 sub "
-	"store "
-	"push 512 load "
-	"print "
-	"halt "
-;
-
 char *operations[] = {
 	"halt", "push", "load", "store", "add", "sub", "print",
 };
 
+int sourceLen = 0;
+char *source = 0;
 int numOperations = sizeof(operations) / sizeof(char*);
-char *cur = source;
-char *start = source;
+char *cur = 0;
+char *start = 0;
 int binary[1024];
 int *curBin = binary;
 int found = 0;
 int num = 0;
 FILE *fs = 0;
 
-void main()
+void main(int argc, char **argv)
 {
+	if(argc < 2) {
+		printf("error: missing input file\n");
+		exit(-1);
+	}
+	
+	fs = fopen(argv[1], "rb");
+	
+	if(fs == 0) {
+		printf("error: input file not found\n");
+		exit(-1);
+	}
+	
+	fseek(fs, 0, SEEK_END);
+	sourceLen = ftell(fs);
+	source = malloc(sourceLen);
+	source[sourceLen] = 0;
+	fseek(fs, 0, SEEK_SET);
+	fread(source, sizeof(char), sourceLen, fs);
+	fclose(fs);
+	
+	cur = source;
+	start = source;
+	
 	while(*cur) {
 		if(*cur >= 'a' && *cur <= 'z') {
 			start = cur;

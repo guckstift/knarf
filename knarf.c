@@ -16,10 +16,16 @@ void main(int argc, char **argv)
 {
 	printf("knarf\n");
 	
-	fs = fopen("prog.bin", "rb");
+	if(argc < 2) {
+		printf("error: missing input file\n");
+		exit(-1);
+	}
+	
+	fs = fopen(argv[1], "rb");
 	
 	if(fs == 0) {
-		printf("error: missing input file\n");
+		printf("error: input file not found\n");
+		exit(-1);
 	}
 	
 	fread(ram, sizeof(int), 1024, fs);
@@ -58,6 +64,9 @@ void main(int argc, char **argv)
 				op1 = *sp++;
 				printf("%i\n", op1);
 				break;
+			default:
+				printf("error: unknown opcode %i\n", op);
+				exit(-1);
 		}
 	}
 }
