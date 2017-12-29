@@ -151,6 +151,34 @@ void main(int argc, char **argv)
 		}
 	}
 	
+	struct Reloc *curReloc = relocs;
+	
+	while(curReloc) {
+		struct Label *curLabel = labels;
+		found = 0;
+		
+		while(curLabel) {
+			if(
+				curLabel->length == curReloc->length &&
+				strncmp(curLabel->name, curReloc->name, curLabel->length) == 0
+			) {
+				binary[curReloc->position] = curLabel->position;
+				printf("set relocation at %i to %i\n", curReloc->position, curLabel->position);
+				found = 1;
+				break;
+			}
+			
+			curLabel = curLabel->next;
+		}
+		
+		if(!found) {
+			printf("error: label not found\n");
+			exit(-1);
+		}
+		
+		curReloc = curReloc->next;
+	}
+	
 	printf("binary has %li words\n", curBin - binary);
 	
 	fs = fopen("prog.bin", "wb");
