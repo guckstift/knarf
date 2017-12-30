@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef union Ram {
+	void *v;
+	char *c;
+	int *i;
+} Ram;
+
 char *operations[] = {
 	"halt", "push", "load", "store", "add", "sub", "mul", "div", "print", "jz", "jmp",
 };
@@ -11,8 +17,8 @@ char *source = 0;
 int numOperations = sizeof(operations) / sizeof(char*);
 char *cur = 0;
 char *start = 0;
-int binary[1024];
-int *curBin = binary;
+Ram binary = {.v = 0};
+Ram curBin = {.v = 0};
 int found = 0;
 int num = 0;
 int tokLen = 0;
@@ -93,6 +99,9 @@ void main(int argc, char **argv)
 	fread(source, sizeof(char), sourceLen, fs);
 	fclose(fs);
 	
+	binary.v = malloc(sizeof(int) * 1024);
+	curBin.v = binary.v;
+	
 	cur = source;
 	start = source;
 	
@@ -110,16 +119,16 @@ void main(int argc, char **argv)
 				
 				if(opLen == tokLen && strncmp(start, operations[i], opLen) == 0) {
 					found = 1;
-					*curBin++ = i;
-					printf("%s\n", operations[i]);
+					printf("%li: %s\n", curBin.c - binary.c, operations[i]);
+					*curBin.c++ = i;
 					break;
 				}
 			}
 			
 			if(!found) {
-				addReloc(start, tokLen, curBin - binary);
-				*curBin++ = 0;
-				printf("reloc %.*s\n", tokLen, start);
+				addReloc(start, tokLen, curBin.c - binary.c);
+				printf("%li: reloc %.*s\n", curBin.c - binary.c, tokLen, start);
+				*curBin.i++ = 0;
 			}
 		}
 		else if(*cur >= '0' && *cur <= '9') {
@@ -129,8 +138,8 @@ void main(int argc, char **argv)
 				num = num * 10 + *cur++ - '0';
 			}
 			
-			*curBin++ = num;
-			printf("%i\n", num);
+			printf("%li: %i\n", curBin.c - binary.c, num);
+			*curBin.i++ = num;
 		}
 		else if(*cur  == ':') {
 			cur++;
@@ -139,8 +148,8 @@ void main(int argc, char **argv)
 			while(*cur >= 'a' && *cur <= 'z') cur++;
 			
 			tokLen = cur - start;
-			addLabel(start, tokLen, curBin - binary);
-			printf("label %.*s\n", tokLen, start);
+			addLabel(start, tokLen, curBin.c - binary.c);
+			printf("%li: label %.*s\n", curBin.c - binary.c, tokLen, start);
 		}
 		else if(*cur == ' ' || *cur == '\t' || *cur == '\r' || *cur == '\n') {
 			cur++;
@@ -162,7 +171,7 @@ void main(int argc, char **argv)
 				curLabel->length == curReloc->length &&
 				strncmp(curLabel->name, curReloc->name, curLabel->length) == 0
 			) {
-				binary[curReloc->position] = curLabel->position;
+				*(int*)(binary.c + curReloc->position) = curLabel->position;
 				printf("set relocation at %i to %i\n", curReloc->position, curLabel->position);
 				found = 1;
 				break;
@@ -179,9 +188,9 @@ void main(int argc, char **argv)
 		curReloc = curReloc->next;
 	}
 	
-	printf("binary has %li words\n", curBin - binary);
+	printf("binary has %li words\n", curBin.c - binary.c);
 	
 	fs = fopen(argv[1], "wb");
-	fwrite(binary, sizeof(int), 1024, fs);
+	fwrite(binary.v, sizeof(int), 1024, fs);
 	fclose(fs);
 }

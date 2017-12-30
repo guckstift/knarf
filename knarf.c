@@ -3,12 +3,19 @@
 
 enum {HALT, PUSH, LOAD, STORE, ADD, SUB, MUL, DIV, PRINT, JZ, JMP};
 
+typedef union Ram {
+	void *v;
+	char *c;
+	int *i;
+} Ram;
+
 FILE *fs = 0;
-int ram[1024];
-int *ip = ram;
-int *sp = ram + 1024;
+
+Ram ram;
+Ram ip = {.v = 0};
+Ram sp = {.v = 0};
 int running = 1;
-int op = 0;
+char op = 0;
 int op1 = 0;
 int op2 = 0;
 
@@ -28,60 +35,64 @@ void main(int argc, char **argv)
 		exit(-1);
 	}
 	
-	fread(ram, sizeof(int), 1024, fs);
+	ram.v = malloc(sizeof(int) * 1024);
+	ip.v = ram.v;
+	sp.i = ram.i + 1024;
+	
+	fread(ram.v, sizeof(int), 1024, fs);
 	
 	while(running) {
-		op = *ip++;
+		op = *ip.c++;
 		
 		switch(op) {
 			case HALT:
 				running = 0;
 				break;
 			case PUSH:
-				op1 = *ip++;
-				*--sp = op1;
+				op1 = *ip.i++;
+				*--sp.i = op1;
 				break;
 			case LOAD:
-				op1 = *sp++;
-				*--sp = ram[op1];
+				op1 = *sp.i++;
+				*--sp.i = *(int*)(ram.c + op1);
 				break;
 			case STORE:
-				op2 = *sp++;
-				op1 = *sp++;
-				ram[op1] = op2;
+				op2 = *sp.i++;
+				op1 = *sp.i++;
+				*(int*)(ram.c + op1) = op2;
 				break;
 			case ADD:
-				op2 = *sp++;
-				op1 = *sp++;
-				*--sp = op1 + op2;
+				op2 = *sp.i++;
+				op1 = *sp.i++;
+				*--sp.i = op1 + op2;
 				break;
 			case SUB:
-				op2 = *sp++;
-				op1 = *sp++;
-				*--sp = op1 - op2;
+				op2 = *sp.i++;
+				op1 = *sp.i++;
+				*--sp.i = op1 - op2;
 				break;
 			case MUL:
-				op2 = *sp++;
-				op1 = *sp++;
-				*--sp = op1 * op2;
+				op2 = *sp.i++;
+				op1 = *sp.i++;
+				*--sp.i = op1 * op2;
 				break;
 			case DIV:
-				op2 = *sp++;
-				op1 = *sp++;
-				*--sp = op1 / op2;
+				op2 = *sp.i++;
+				op1 = *sp.i++;
+				*--sp.i = op1 / op2;
 				break;
 			case PRINT:
-				op1 = *sp++;
+				op1 = *sp.i++;
 				printf("%i\n", op1);
 				break;
 			case JZ:
-				op2 = *sp++;
-				op1 = *sp++;
-				if(!op1) ip = ram + op2;
+				op2 = *sp.i++;
+				op1 = *sp.i++;
+				if(!op1) ip.c = ram.c + op2;
 				break;
 			case JMP:
-				op1 = *sp++;
-				ip = ram + op1;
+				op1 = *sp.i++;
+				ip.c = ram.c + op1;
 				break;
 			default:
 				printf("error: unknown opcode %i\n", op);
