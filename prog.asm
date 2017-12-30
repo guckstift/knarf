@@ -1,7 +1,12 @@
-push loopstart jmp
+push start jmp
 
+:msg "Hello World"
 :x 10
 :y 1
+
+:start
+
+push msg prints
 
 :loopstart
 

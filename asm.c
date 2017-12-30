@@ -9,7 +9,7 @@ typedef union Ram {
 } Ram;
 
 char *operations[] = {
-	"halt", "push", "load", "store", "add", "sub", "mul", "div", "print", "jz", "jmp",
+	"halt", "push", "load", "store", "add", "sub", "mul", "div", "print", "prints", "jz", "jmp",
 };
 
 int sourceLen = 0;
@@ -150,6 +150,25 @@ void main(int argc, char **argv)
 			tokLen = cur - start;
 			addLabel(start, tokLen, curBin.c - binary.c);
 			printf("%li: label %.*s\n", curBin.c - binary.c, tokLen, start);
+		}
+		else if(*cur  == '"') {
+			cur++;
+			
+			printf("%li: string\n", curBin.c - binary.c);
+			
+			while(*cur != '"' && *cur != 0) {
+				if(*cur == '\\') {
+					cur++;
+				}
+				*curBin.c++ = *cur;
+				cur++;
+			}
+			
+			*curBin.c++ = 0;
+			
+			if(*cur == '"') {
+				cur++;
+			}
 		}
 		else if(*cur == ' ' || *cur == '\t' || *cur == '\r' || *cur == '\n') {
 			cur++;

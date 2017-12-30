@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-enum {HALT, PUSH, LOAD, STORE, ADD, SUB, MUL, DIV, PRINT, JZ, JMP};
+enum {HALT, PUSH, LOAD, STORE, ADD, SUB, MUL, DIV, PRINT, PRINTS, JZ, JMP};
 
 typedef union Ram {
 	void *v;
@@ -84,6 +84,10 @@ void main(int argc, char **argv)
 			case PRINT:
 				op1 = *sp.i++;
 				printf("%i\n", op1);
+				break;
+			case PRINTS:
+				op1 = *sp.i++;
+				printf("%s\n", ram.c + op1);
 				break;
 			case JZ:
 				op2 = *sp.i++;
